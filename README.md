@@ -6,3 +6,12 @@ Instead of manually duplicating product blocks or being constrained to category/
 
 The intent is to decouple merchandising from rigid catalogue structure, so products become portable content components that can be embedded, reused, and targeted contextually without rewriting core templates or duplicating data.
 
+## Use
+
+```
+<div class="product-preview" data-id="123">
+<script src="https://yourshop.com/shop/embed.js" defer></script>
+```
+
+Replace 123 with a valid Product ID
+Replace https://yourshop.com/shop/ with your shop url
