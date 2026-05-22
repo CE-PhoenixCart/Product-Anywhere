@@ -96,7 +96,7 @@
       <p class="pc-description">{{description}}</p>
 
       <a class="pc-link" href="{{url}}" target="_blank" rel="noopener noreferrer nofollow">
-        View product →
+        View product ->
       </a>
     </div>
   </div>
@@ -151,6 +151,7 @@
     const params = new URLSearchParams();
     params.set('utm_medium', 'card');
     params.set('utm_campaign', 'embed');
+    params.set('utm_aff', '123');
 
     let source = 'direct';
     if (document.referrer) {
