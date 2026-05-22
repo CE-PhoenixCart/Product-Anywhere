@@ -8,14 +8,24 @@
   Released under the GNU General Public License
 */
 
+$lang = $_GET['lang'] ?? '';
+$lang = preg_replace('/[^a-z]/i', '', strtolower($lang));
+
+if (!empty($lang)) {
+  $_GET['language'] = $lang;
+}
+
 chdir('../');
 require 'includes/application_top.php';
+
+require language::map_to_translation('api/embed.php');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Cache-Control: public, max-age=300');
 header('Vary: Origin');
+header('Vary: Accept-Language');
 
 $site_url = $GLOBALS['Linker']->build('index.php', [], false);
 
@@ -63,7 +73,8 @@ $data = [
   'description' => $clean_description,
   'price' => $GLOBALS['currencies']->format($product->get('price')),
   'special' => $GLOBALS['currencies']->format($product->get('base_price')),
-  'availability' => ($stock > 0) ? 'In Stock' : 'Out of Stock',
+  'availability' => ($stock > 0) ? TEXT_PRODUCT_AVAILABLE : TEXT_PRODUCT_NOT_AVAILABLE,
+  'view_product' => defined('TEXT_VIEW_PRODUCT')? TEXT_VIEW_PRODUCT : 'View product ->',
 ];
 
 // optional fields, may or may not exist

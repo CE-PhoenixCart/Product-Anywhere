@@ -26,6 +26,24 @@
   const ERROR_HTML = `<p style="color:#dc3545;font-size:0.875rem;">Failed to load</p>`;
   const INVALID_PRODUCT_HTML = `<p style="color:#dc3545;font-size:0.9rem;">Invalid product ID</p>`;
   const LOADING_HTML = `<p style="font-size:0.9rem;color:#6c757d;">Loading…</p>`;
+  // Get the current script being executed
+  const current_script = document.currentScript || (() => {
+    const scripts = document.querySelectorAll('script[src*="embed.js"]');
+    return scripts[scripts.length - 1];
+  })();
+
+  const LANGUAGE = (() => {
+    if (!current_script) {
+      return 'en';
+    }
+
+    const url = new URL(current_script.src);
+
+    return (
+      url.searchParams.get('lang') ||
+      'en'
+    ).toLowerCase().split('-')[0];
+  })();
 
   const STYLES = `
   .pc-widget {
@@ -96,7 +114,7 @@
       <p class="pc-description">{{description}}</p>
 
       <a class="pc-link" href="{{url}}" target="_blank" rel="noopener noreferrer nofollow">
-        View product ->
+        {{view_product}} ->
       </a>
     </div>
   </div>
@@ -151,7 +169,6 @@
     const params = new URLSearchParams();
     params.set('utm_medium', 'card');
     params.set('utm_campaign', 'embed');
-    params.set('utm_aff', '123');
 
     let source = 'direct';
     if (document.referrer) {
@@ -164,28 +181,17 @@
     return params.toString();
   })();
   
-  // Get the current script being executed
-  const getCurrentScript = () => {
-    if (document.currentScript) {
-      return document.currentScript;
-    }
-    
-    const currentScript = document.currentScript;
-
-    if (!currentScript) {
-      throw new Error('Unable to determine widget script URL');
-    }
-
-    return currentScript;
-  };
-
   const API_BASE_URL = (() => {
-    const currentScript = getCurrentScript();
-    const scriptSrc = currentScript.src;
+    if (!current_script) {
+      throw new Error('Script not found');
+    }
 
-    const url = new URL(scriptSrc);
+    const url = new URL(current_script.src);
+
     url.pathname = url.pathname.replace(/\/embed\.js$/, '/api/embed.php');
-    
+
+    url.search = '';
+
     return url.toString();
   })();
 
@@ -200,8 +206,8 @@
       return;
     }
     
-    const apiUrl = `${API_BASE_URL}?id=${productId}`;
-    
+    const apiUrl = `${API_BASE_URL}?id=${productId}&lang=${encodeURIComponent(LANGUAGE)}`;
+
     container.innerHTML = LOADING_HTML;
   
     try {
