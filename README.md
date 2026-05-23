@@ -10,8 +10,9 @@ The intent is to decouple merchandising from rigid catalogue structure, so produ
 
 ```
 <div class="product-preview" data-id="123">
-<script src="https://yourshop.com/shop/embed.js" defer></script>
+<script src="https://yourshop.com/shop/embed.js?lang=de" defer></script>
 ```
 
 Replace 123 with a valid Product ID
 Replace https://yourshop.com/shop/ with your shop url
+Replace ?lang=de with your desired language

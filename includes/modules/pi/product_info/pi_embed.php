@@ -30,9 +30,21 @@
     public function getOutput() {
       global $product;
       
+      if (($GLOBALS['lng'] ?? null) instanceof language) {
+        $lng =& $GLOBALS['lng'];
+      } else {
+        $lng = new language();
+      }
+      
+      foreach ($lng->catalog_languages as $key => $value) {
+        if ($value['id'] == $_SESSION['languages_id']) {
+          $language = $value['code'];
+        }
+      }
+      
       $product_url = $GLOBALS['Linker']->build('product_info.php', ['products_id' => (int)$product->get('id')], false);
       $product_id = (int)$product->get('id');
-      $script_url = $GLOBALS['Linker']->build('', [], false);
+      $script_url = $GLOBALS['Linker']->build('', [], false) . 'embed.js?lang=' . $language;
       
       $tpl_data = ['group' => $this->group, 'file' => __FILE__];
       include 'includes/modules/block_template.php';
