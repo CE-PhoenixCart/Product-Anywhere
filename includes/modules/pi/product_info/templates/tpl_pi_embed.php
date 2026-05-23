@@ -43,7 +43,7 @@ $embed_modal = <<<EOM
             </div>
             <div class="embed-preview-box">
               <div class="product-preview" data-id="{$product_id}"></div>
-              <script src="{$script_url}embed.js" defer></script>
+              <script src="{$script_url}" defer></script>
             </div>
           </div>
           <div class="col-lg-8 p-4 embed-code-side">
@@ -59,7 +59,7 @@ $embed_modal = <<<EOM
                 {$pi_embed_modal_code_box_title}
               </div>
               <code id="embed-code">&lt;div class="product-preview" data-id="{$product_id}"&gt;&lt;/div&gt;
-&lt;script src="{$script_url}embed.js" defer&gt;&lt;/script&gt;</code>
+&lt;script src="{$script_url}" defer&gt;&lt;/script&gt;</code>
             </div>
               
             <div class="embed-copy-row">
