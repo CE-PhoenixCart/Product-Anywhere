@@ -52,7 +52,7 @@ $products_image = $product->get('image');
 $stock = max(0, (int)$product->get('in_stock'));
 
 $data = [
-  'version' => 1,
+  'version' => 2,
   'id' => (int)$product->get('id'),
   'sku' => (string)$sku,
   'name' => clean_output($product->get('name')),
