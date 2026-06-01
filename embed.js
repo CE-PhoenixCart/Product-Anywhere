@@ -10,7 +10,7 @@
 (function () {
   'use strict';
 
-  const CACHE_TIME = 300000;
+  const CACHE_TIME = 60000;
   const MAX_CACHE_ENTRIES = 100;
   const FETCH_TIMEOUT = 5000;
   const MAX_CONCURRENT = 3;

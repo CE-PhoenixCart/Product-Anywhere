@@ -14,7 +14,7 @@ require 'includes/application_top.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
-header('Cache-Control: public, max-age=300');
+header('Cache-Control: public, max-age=60, must-revalidate');
 header('Vary: Origin');
 
 $site_url = $GLOBALS['Linker']->build('index.php', [], false);
