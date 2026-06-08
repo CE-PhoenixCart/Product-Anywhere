@@ -88,46 +88,49 @@
 
   const getCurrentScript = () => {
     if (document.currentScript) return document.currentScript;
+    const scripts = document.querySelectorAll('script');
+    for (let i = scripts.length - 1; i >= 0; i--) {
+      if (scripts[i].src && scripts[i].src.includes('embed.js')) {
+        return scripts[i];
+      }
+    }
     throw new Error('Unable to determine widget script URL');
   };
 
-  const API_BASE_URL = (() => {
+  const getBaseUrl = (replacement) => {
     const url = new URL(getCurrentScript().src);
-    url.pathname = url.pathname.replace(/\/embed\.js$/, '/api/embed.php');
+    url.pathname = url.pathname.replace(/\/embed\.js$/, replacement);
     url.search = '';
     return url.toString();
-  })();
-  
+  };
+
+  const API_BASE_URL = getBaseUrl('/api/embed.php');
+  const UI_BASE_URL = getBaseUrl('/api/embed-ui.php');
+
   let uiPromise = null;
-
-  const UI_BASE_URL = (() => {
-    const url = new URL(getCurrentScript().src);
-    url.pathname = url.pathname.replace(/\/embed\.js$/, '/api/embed-ui.php');
-    url.search = '';
-    return url.toString();
-  })();
-
-  function ensureStyles(css) {
-    let style = document.getElementById('pc-widget-styles');
-    if (!style) {
-      style = document.createElement('style');
-      style.id = 'pc-widget-styles';
-      document.head.appendChild(style);
+  function getUI() {
+    if (!uiPromise) {
+      uiPromise = queueFetch(UI_BASE_URL).then(r => {
+        if (!r.ok) throw new Error(`UI HTTP ${r.status}`);
+        return r.json();
+      });
     }
-    style.textContent = css || '';
+    return uiPromise;
   }
 
   function renderTemplate(template, data) {
     return template.replace(/{{(\w+)}}/g, (_, key) => {
       if (key === 'url') {
-        const url = new URL(data.url);
-
-        UTM_QUERY.split('&').forEach(p => {
-          const [k, v] = p.split('=');
-          if (k) url.searchParams.set(k, v || '');
-        });
-
-        return escapeHtml(url.toString());
+        try {
+          const url = new URL(data.url || '');
+          UTM_QUERY.split('&').forEach(p => {
+            const [k, v] = p.split('=');
+            if (k) url.searchParams.set(k, v || '');
+          });
+          return escapeHtml(url.toString());
+        } catch (e) {
+          return '#';
+        }
       }
 
       if (key === 'price') {
@@ -143,67 +146,68 @@
       return escapeHtml(data[key] ?? '');
     });
   }
-  
-  function getUI() {
-    if (!uiPromise) {
-      uiPromise = queueFetch(UI_BASE_URL).then(r => {
-        if (!r.ok) throw new Error(`UI HTTP ${r.status}`);
-        return r.json();
-      });
-    }
-    return uiPromise;
-  }
 
-  async function loadCard(container) {
-    if (container.dataset.loaded === '1') return;
-    container.dataset.loaded = '1';
-
-    const productId = container.dataset.id;
-    if (!productId) {
-      container.innerHTML = INVALID_PRODUCT_HTML;
-      return;
-    }
-
-    const dataUrl = `${API_BASE_URL}?id=${productId}`;
-
-    container.innerHTML = LOADING_HTML;
-
-    try {
-      let data;
-
-      const cached = cache.get(dataUrl);
-      if (cached && (Date.now() - cached.timestamp < CACHE_TIME)) {
-        data = cached.data;
-      } else {
-        const response = await queueFetch(dataUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        data = await response.json();
-
-        cache.set(dataUrl, { data, timestamp: Date.now() });
-        trimCache(cache);
-      }
-
-      const ui = await getUI();
-      ensureStyles(ui.styles);
-
-      const html = renderTemplate(ui.template, data);
-      container.innerHTML = html;
-    } catch {
-      container.innerHTML = ERROR_HTML;
-    }
-  }
-
-  const widgets = document.querySelectorAll('.product-preview');
-  if (!widgets.length) return;
-
-  const observer = new IntersectionObserver(entries => {
+  const sharedObserver = new IntersectionObserver(async (entries) => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
-      observer.unobserve(entry.target);
-      loadCard(entry.target);
+      
+      sharedObserver.unobserve(entry.target);
+      
+      const el = entry.target;
+      if (el.dataset.loaded === '1') continue;
+      el.dataset.loaded = '1';
+
+      const productId = el.dataset.id;
+      if (!productId) {
+        el.shadowRoot.innerHTML = INVALID_PRODUCT_HTML;
+        return;
+      }
+
+      const dataUrl = `${API_BASE_URL}?id=${productId}`;
+      el.shadowRoot.innerHTML = LOADING_HTML;
+
+      try {
+        let data;
+        const cached = cache.get(dataUrl);
+        
+        if (cached && (Date.now() - cached.timestamp < CACHE_TIME)) {
+          data = cached.data;
+        } else {
+          const response = await queueFetch(dataUrl);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          data = await response.json();
+          cache.set(dataUrl, { data, timestamp: Date.now() });
+          trimCache(cache);
+        }
+
+        const ui = await getUI();
+        const html = renderTemplate(ui.template, data);
+        
+        el.shadowRoot.innerHTML = `<style>${ui.styles || ''}</style>${html}`;
+
+      } catch (err) {
+        console.error('ProductPreview load error:', err);
+        el.shadowRoot.innerHTML = ERROR_HTML;
+      }
     }
   }, { rootMargin: '200px' });
 
-  widgets.forEach(w => observer.observe(w));
+  class ProductPreview extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+    }
 
+    connectedCallback() {
+      sharedObserver.observe(this);
+    }
+
+    disconnectedCallback() {
+      sharedObserver.unobserve(this);
+    }
+  }
+
+  if (!customElements.get('product-preview')) {
+    customElements.define('product-preview', ProductPreview);
+  }
 })();

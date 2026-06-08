@@ -9,9 +9,9 @@ The intent is to decouple merchandising from rigid catalogue structure, so produ
 ## Use
 
 ```
-<div class="product-preview" data-id="123">
+<product-preview data-id="123"></product-preview>
 <script src="https://yourshop.com/shop/embed.js" defer></script>
 ```
 
-Replace 123 with a valid Product ID
-Replace https://yourshop.com/shop/ with your shop url
+- Replace 123 with a valid Product ID  
+- Replace https://yourshop.com/shop/ with your shop url
