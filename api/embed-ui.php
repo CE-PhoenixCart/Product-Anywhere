@@ -14,6 +14,10 @@ header('Cache-Control: public, max-age=3600, must-revalidate');
 
 echo json_encode([
   'styles' => <<<CSS
+:host {
+  display: inline-block;
+}
+
 .pc-widget {
   border: 1px solid #dee2e6;
   border-radius: 0.375rem;
@@ -24,7 +28,7 @@ echo json_encode([
   overflow: hidden;
 }
 
-.pc-widget *, .pc-widget *::before, .pc-widget *::after {
+:host, .pc-widget, .pc-widget *, .pc-widget *::before, .pc-widget *::after {
   box-sizing: border-box;
 }
 
