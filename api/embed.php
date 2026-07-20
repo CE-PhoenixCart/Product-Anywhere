@@ -17,6 +17,16 @@ header('Access-Control-Allow-Methods: GET');
 header('Cache-Control: public, max-age=60, must-revalidate');
 header('Vary: Origin');
 
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+
+if (trim($referer) === '') {
+  http_response_code(403);
+  echo json_encode([
+    'error' => 'Missing referer'
+  ], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
+  exit;
+}
+
 $site_url = $GLOBALS['Linker']->build('index.php', [], false);
 
 $products_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
