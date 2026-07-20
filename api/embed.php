@@ -17,6 +17,49 @@ header('Access-Control-Allow-Methods: GET');
 header('Cache-Control: public, max-age=60, must-revalidate');
 header('Vary: Origin');
 
+const RATE_LIMIT_WINDOW = 60;   // seconds
+const RATE_LIMIT_MAX    = 15;   // requests per window per IP
+
+function rate_limited($ip) {
+  if (!function_exists('apcu_fetch')) {
+    return false; 
+  }
+
+  $key = 'pa_rl_' . md5($ip);
+  $now = time();
+
+  $bucket = apcu_fetch($key);
+  if ($bucket === false) {
+    $bucket = ['count' => 0, 'reset' => $now + RATE_LIMIT_WINDOW];
+  }
+
+  if ($now >= $bucket['reset']) {
+    $bucket = ['count' => 0, 'reset' => $now + RATE_LIMIT_WINDOW];
+  }
+
+  $bucket['count']++;
+  apcu_store($key, $bucket, RATE_LIMIT_WINDOW);
+
+  if ($bucket['count'] > RATE_LIMIT_MAX) {
+    return $bucket['reset'] - $now;
+  }
+
+  return false;
+}
+
+$client_ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+$retry_after = rate_limited($client_ip);
+
+if ($retry_after !== false) {
+  http_response_code(429);
+  header('Retry-After: ' . $retry_after);
+  echo json_encode([
+    'error' => 'Too many requests',
+    'retry_after' => $retry_after
+  ], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
+  exit;
+}
+
 $referer = $_SERVER['HTTP_REFERER'] ?? '';
 
 if (trim($referer) === '') {
