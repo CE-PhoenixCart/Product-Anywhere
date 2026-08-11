@@ -113,6 +113,9 @@
       uiPromise = queueFetch(UI_BASE_URL).then(r => {
         if (!r.ok) throw new Error(`UI HTTP ${r.status}`);
         return r.json();
+      }).catch(err => {
+        uiPromise = null;
+        throw err;
       });
     }
     return uiPromise;
@@ -160,7 +163,7 @@
       const productId = el.dataset.id;
       if (!productId) {
         el.shadowRoot.innerHTML = INVALID_PRODUCT_HTML;
-        return;
+        continue;
       }
 
       const dataUrl = `${API_BASE_URL}?id=${productId}`;
@@ -174,7 +177,28 @@
           data = cached.data;
         } else {
           const response = await queueFetch(dataUrl);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          if (!response.ok) {
+            if (response.status === 404) {
+              let payload = null;
+              try { payload = await response.json(); } catch {}
+              const siteUrl = payload?.site_url;
+              const link = siteUrl
+                ? `<a class="pc-link" href="${escapeHtml(siteUrl)}">Visit the Store</a>`
+                : '';
+
+              const ui = await getUI();
+              el.shadowRoot.innerHTML = `<style>${ui.styles || ''}</style>
+                <div class="pc-widget">
+                  <div class="pc-body">
+                    <p class="pc-description">Sorry, this product is not currently available.</p>
+                    ${link}
+                  </div>
+                </div>`;
+              continue;
+            }
+            throw new Error(`HTTP ${response.status}`);
+          }
+
           data = await response.json();
           cache.set(dataUrl, { data, timestamp: Date.now() });
           trimCache(cache);
