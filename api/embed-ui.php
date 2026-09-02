@@ -79,11 +79,78 @@ echo json_encode([
 .pc-link:hover {
   background: #5a6268;
 }
+pc-signal-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.1); 
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6); 
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  z-index: 10;
+  line-height: 1;
+}
+
+.pc-wifi-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.pc-wifi-icon .dot {
+  fill: #fff;
+}
+
+.pc-wifi-icon .arc-inner {
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+  animation: wifi-pulse 1.6s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.pc-wifi-icon .arc-outer {
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+  animation: wifi-pulse 1.6s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+
+@keyframes wifi-pulse {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
 CSS,
 
   'template' => <<<HTML
 <div class="pc-widget">
-  <img class="pc-image" src="{{image}}" alt="{{name}}" loading="lazy">
+  <div class="pc-image-wrap" style="position: relative;">
+    <img class="pc-image" src="{{image}}" alt="{{name}}" loading="lazy">
+    <div class="pc-signal-badge" title="Live store connection active">
+      <svg class="pc-wifi-icon" viewBox="0 0 24 24">
+        <circle class="dot" cx="12" cy="19" r="1.5" />
+        <path class="arc-inner" d="M8.5 14.5A5 5 0 0 1 15.5 14.5" />
+        <path class="arc-outer" d="M5 11A10 10 0 0 1 19 11" />
+      </svg>
+      <span>LIVE</span>
+    </div>
+  </div>
 
   <div class="pc-body">
     <h5 class="pc-title">{{name}}</h5>
