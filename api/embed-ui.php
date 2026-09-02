@@ -79,7 +79,8 @@ echo json_encode([
 .pc-link:hover {
   background: #5a6268;
 }
-pc-signal-badge {
+
+.pc-signal-badge {
   position: absolute;
   top: 10px;
   right: 10px;
