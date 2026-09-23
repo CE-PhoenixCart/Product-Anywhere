@@ -16,6 +16,22 @@ Phoenix Cart remains the single source of truth for product data while external 
 
 <img src="https://raw.githubusercontent.com/CE-PhoenixCart/Product-Anywhere/master/.github/Network.png" alt="Product Anywhere Network Diagram">
 
+## Live Demo
+
+**See Product Anywhere in Action**
+
+Experience a live embedded card directly on the official Phoenix Cart homepage:
+
+<div align="center">
+<a href="https://phoenixcart.org/index.php">
+  <img src="https://raw.githubusercontent.com/CE-PhoenixCart/Product-Anywhere/master/.github/demo.png" alt="Product Anywhere Card Demo">
+</a>
+
+
+*Click the preview above or visit [phoenixcart.org](https://phoenixcart.org/index.php) to see the live integration.*
+
+</div>
+
 ## Usage
 
 ```html
